@@ -5,7 +5,10 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dbPath = path.join(__dirname, 'expenses.db');
+const dbPath = process.env.VERCEL
+  ? path.join('/tmp', 'expenses.db')
+  : path.join(__dirname, 'expenses.db');
+const bundledDbPath = path.join(__dirname, 'expenses.db');
 
 let db = null;
 
@@ -13,9 +16,13 @@ export async function initDb() {
   if (db) return db;
 
   const SQL = await initSqlJs();
-  if (fs.existsSync(dbPath)) {
+  const sourcePath = fs.existsSync(dbPath)
+    ? dbPath
+    : (fs.existsSync(bundledDbPath) ? bundledDbPath : null);
+
+  if (sourcePath) {
     try {
-      const fileBuffer = fs.readFileSync(dbPath);
+      const fileBuffer = fs.readFileSync(sourcePath);
       db = new SQL.Database(fileBuffer);
     } catch (err) {
       console.warn('Could not read existing database, creating fresh one:', err.message);

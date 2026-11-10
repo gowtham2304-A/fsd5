@@ -73,18 +73,14 @@ if (fs.existsSync(publicDir)) {
   });
 }
 
-// Start Server
-async function startServer() {
-  try {
-    await initDb();
-    app.listen(PORT, () => {
-      console.log(`Expense Tracker API Server is running on http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    console.error('Failed to initialize database or start server:', err);
-    process.exit(1);
-  }
+// Initialize database and start server
+await initDb();
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Expense Tracker API Server is running on http://localhost:${PORT}`);
+  });
 }
 
-startServer();
+export default app;
 
